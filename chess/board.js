@@ -1,10 +1,11 @@
-const squareSize = 75
-let screenSize = [600, 600]
+let screenSize = 600
+const squareSize = screenSize / 8
 
 function setup()
 {
-    let canvas = createCanvas(...screenSize)
+    let canvas = createCanvas(screenSize, screenSize)
     canvas.parent("chess-board")
+    canvas.class('game')
 
 }
 
@@ -19,9 +20,9 @@ function showGrid(){
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
             if ((i+j)%2 === 0) {
-                fill(255)
+                fill("#F0D9B2")
             } else {
-                fill(0)
+                fill("#B58860")
             }
             rect(i*squareSize, j*squareSize, squareSize, squareSize)
         }
