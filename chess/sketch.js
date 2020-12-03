@@ -1,6 +1,9 @@
 let screenSize = 600
 const tileSize = screenSize / 8
-let board;
+
+let board
+let moving = false
+let movingPiece
 
 function setup()
 {
@@ -29,5 +32,24 @@ function showGrid(){
             }
             rect(i*tileSize, j*tileSize, tileSize, tileSize)
         }
+    }
+}
+
+function mousePressed() {
+    var x = floor(mouseX/tileSize)
+    var y = floor(mouseY/tileSize)
+    if (!moving) {
+        if (board.pieceAt(x, y)) {
+            movingPiece = board.getPieceAt(x, y)
+            movingPiece.movingThisPiece = true
+            moving = true
+        }
+    } else {
+        if (movingPiece != null) {
+            movingPiece.move(x, y)
+            movingPiece.movingThisPiece = false
+            movingPiece = null
+        }
+        moving = !moving
     }
 }
