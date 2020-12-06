@@ -17,19 +17,19 @@ function setup()
     canvas.class('game')
     // deathSound = loadSound('../src/fortnite-default.mp3')
     spriteMapper = {
-        "black_king": loadImage('../src/pieces/' + "b_king_svg_NoShadow.png"),
-        "black_bishop": loadImage('../src/pieces/' + "b_bishop_svg_NoShadow.png"),
-        "black_knight": loadImage('../src/pieces/' + "b_knight_svg_NoShadow.png"),
-        "black_pawn": loadImage('../src/pieces/' + "b_pawn_svg_NoShadow.png"),
-        "black_rook": loadImage('../src/pieces/' + "b_rook_svg_NoShadow.png"),
-        "black_queen": loadImage('../src/pieces/' + "b_queen_svg_NoShadow.png"),
+        "black_king": loadImage('./src/pieces/' + "b_king_svg_NoShadow.png"),
+        "black_bishop": loadImage('./src/pieces/' + "b_bishop_svg_NoShadow.png"),
+        "black_knight": loadImage('./src/pieces/' + "b_knight_svg_NoShadow.png"),
+        "black_pawn": loadImage('./src/pieces/' + "b_pawn_svg_NoShadow.png"),
+        "black_rook": loadImage('./src/pieces/' + "b_rook_svg_NoShadow.png"),
+        "black_queen": loadImage('./src/pieces/' + "b_queen_svg_NoShadow.png"),
     
-        "white_king": loadImage('../src/pieces/' + "w_king_svg_NoShadow.png"),
-        "white_bishop": loadImage('../src/pieces/' + "w_bishop_svg_NoShadow.png"),
-        "white_knight": loadImage('../src/pieces/' + "w_knight_svg_NoShadow.png"),
-        "white_pawn": loadImage('../src/pieces/' + "w_pawn_svg_NoShadow.png"),
-        "white_rook": loadImage('../src/pieces/' + "w_rook_svg_NoShadow.png"),
-        "white_queen": loadImage('../src/pieces/' + "w_queen_svg_NoShadow.png")
+        "white_king": loadImage('./src/pieces/' + "w_king_svg_NoShadow.png"),
+        "white_bishop": loadImage('./src/pieces/' + "w_bishop_svg_NoShadow.png"),
+        "white_knight": loadImage('./src/pieces/' + "w_knight_svg_NoShadow.png"),
+        "white_pawn": loadImage('./src/pieces/' + "w_pawn_svg_NoShadow.png"),
+        "white_rook": loadImage('./src/pieces/' + "w_rook_svg_NoShadow.png"),
+        "white_queen": loadImage('./src/pieces/' + "w_queen_svg_NoShadow.png")
     }
     kingSprite = loadImage('../src/pieces/w_king_svg_NoShadow.png')
     board = new Board()
