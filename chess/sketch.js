@@ -10,8 +10,8 @@ let deathSound
 let moveSound
 
 function loadAllFiles() { 
-    moveSound = loadSound('../src/sounds/move-sound.wav')
-    deathSound = loadSound('../src/sounds/death-sound.mp3')
+    moveSound = loadSound('./src/sounds/move-sound.wav')
+    deathSound = loadSound('./src/sounds/death-sound.mp3')
     spriteMapper = {
         "black_king": loadImage('./src/pieces/' + "b_king_svg_NoShadow.png"),
         "black_bishop": loadImage('./src/pieces/' + "b_bishop_svg_NoShadow.png"),
