@@ -15,7 +15,7 @@ function setup()
     let canvas = createCanvas(screenSize, screenSize)
     canvas.parent("chess-board")
     canvas.class('game')
-    // deathSound = loadSound('../src/fortnite-default.mp3')
+    deathSound = loadSound('./src/fortnite-default.mp3')
     spriteMapper = {
         "black_king": loadImage('./src/pieces/' + "b_king_svg_NoShadow.png"),
         "black_bishop": loadImage('./src/pieces/' + "b_bishop_svg_NoShadow.png"),
@@ -31,7 +31,6 @@ function setup()
         "white_rook": loadImage('./src/pieces/' + "w_rook_svg_NoShadow.png"),
         "white_queen": loadImage('./src/pieces/' + "w_queen_svg_NoShadow.png")
     }
-    kingSprite = loadImage('../src/pieces/w_king_svg_NoShadow.png')
     board = new Board()
 }
 
