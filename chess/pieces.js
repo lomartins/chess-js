@@ -44,7 +44,7 @@ class Piece {
         this.taken = true
         this.matrixPosition = createVector(-1, -1);
         this.pixelPosition = createVector(-1, -1);
-        // deathSound.play()
+        deathSound.play()
     }
 }
 
