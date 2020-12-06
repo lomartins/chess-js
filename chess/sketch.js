@@ -5,17 +5,13 @@ let board
 let moving = false
 let movingPiece
 let sprite
-let kingSprite
 let spriteMapper
+let deathSound
+let moveSound
 
-let sprites = {}
-
-function setup()
-{
-    let canvas = createCanvas(screenSize, screenSize)
-    canvas.parent("chess-board")
-    canvas.class('game')
-    deathSound = loadSound('./src/fortnite-default.mp3')
+function loadAllFiles() { 
+    moveSound = loadSound('../src/sounds/move-sound.wav')
+    deathSound = loadSound('../src/sounds/death-sound.mp3')
     spriteMapper = {
         "black_king": loadImage('./src/pieces/' + "b_king_svg_NoShadow.png"),
         "black_bishop": loadImage('./src/pieces/' + "b_bishop_svg_NoShadow.png"),
@@ -31,6 +27,14 @@ function setup()
         "white_rook": loadImage('./src/pieces/' + "w_rook_svg_NoShadow.png"),
         "white_queen": loadImage('./src/pieces/' + "w_queen_svg_NoShadow.png")
     }
+}
+
+function setup()
+{
+    let canvas = createCanvas(screenSize, screenSize)
+    canvas.parent("chess-board")
+    canvas.class('game')
+    loadAllFiles()
     board = new Board()
 }
 
@@ -59,14 +63,18 @@ function mousePressed() {
     var x = floor(mouseX/tileSize)
     var y = floor(mouseY/tileSize)
     if (!moving) {
-        if (board.pieceAt(x, y)) {
+        if (board.isPieceAt(x, y)) {
             movingPiece = board.getPieceAt(x, y)
-            movingPiece.movingThisPiece = true
-            moving = true
+            if (movingPiece.team === board.turn) {
+                movingPiece.movingThisPiece = true
+                moving = true
+            } else {
+                movingPiece = null
+            }
         }
     } else {
         if (movingPiece != null) {
-            movingPiece.move(x, y)
+            movingPiece.move(x, y, board)
             movingPiece.movingThisPiece = false
             movingPiece = null
         }
