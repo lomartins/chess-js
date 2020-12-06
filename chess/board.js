@@ -1,73 +1,82 @@
 class Board {
     constructor() {
-        this.whitePieces = [];
-        this.blackPieces = [];
+        this.pieces = {
+            [TEAM.WHITE]: [],
+            [TEAM.BLACK]: [],
+        };
         this.setupPieces();
         this.turn = TEAM.WHITE;
         this.nullPiece = new Piece(null, null, null);
     }
 
     setupPieces() {
-        this.blackPieces.push(new King(4, 0, TEAM.BLACK));
-        this.blackPieces.push(new Queen(3, 0, TEAM.BLACK));
-        this.blackPieces.push(new Rook(0, 0, TEAM.BLACK));
-        this.blackPieces.push(new Rook(7, 0, TEAM.BLACK));
-        this.blackPieces.push(new Knight(6, 0, TEAM.BLACK));
-        this.blackPieces.push(new Knight(1, 0, TEAM.BLACK));
-        this.blackPieces.push(new Bishop(2, 0, TEAM.BLACK));
-        this.blackPieces.push(new Bishop(5, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new King(4, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Queen(3, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Rook(0, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Rook(7, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Knight(6, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Knight(1, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Bishop(2, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new Bishop(5, 0, TEAM.BLACK));
         for (var i = 0; i < 8; i++) {
-            this.blackPieces.push(new Pawn(i, 1, TEAM.BLACK));
+            this.pieces[TEAM.BLACK].push(new Pawn(i, 1, TEAM.BLACK));
         }
 
-        this.whitePieces.push(new King(4, 7, TEAM.WHITE));
-        this.whitePieces.push(new Queen(3, 7, TEAM.WHITE));
-        this.whitePieces.push(new Rook(0, 7, TEAM.WHITE));
-        this.whitePieces.push(new Rook(7, 7, TEAM.WHITE));
-        this.whitePieces.push(new Knight(6, 7, TEAM.WHITE));
-        this.whitePieces.push(new Knight(1, 7, TEAM.WHITE));
-        this.whitePieces.push(new Bishop(2, 7, TEAM.WHITE));
-        this.whitePieces.push(new Bishop(5, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new King(4, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Queen(3, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Rook(0, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Rook(7, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Knight(6, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Knight(1, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Bishop(2, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new Bishop(5, 7, TEAM.WHITE));
         for (var i = 0; i < 8; i++) {
-            this.whitePieces.push(new Pawn(i, 6, TEAM.WHITE));
+            this.pieces[TEAM.WHITE].push(new Pawn(i, 6, TEAM.WHITE));
         }
     }
 
     show() {
-        this.whitePieces.map(piece => piece.show());
-        this.blackPieces.map(piece => piece.show());
+        this.pieces[TEAM.WHITE].map(piece => piece.show());
+        this.pieces[TEAM.BLACK].map(piece => piece.show());
     }
 
     pass() {
-        switch(this.turn) {
+        this.turn = this.getEnemyTeam(this.turn);
+        this.pieces[this.turn].forEach(piece => {
+            if (piece instanceof Pawn) {
+                piece.enPassant = false;
+            }
+        });
+    }
+
+    getEnemyTeam(team) {
+        switch(team) {
             case TEAM.WHITE:
-                this.turn = TEAM.BLACK;
-                this.blackPieces.map(piece => {
-                    if (piece instanceof Pawn) {
-                        piece.enPassant = false;
-                    }
-                });
-                break;
+                return TEAM.BLACK;
+
             case TEAM.BLACK:
-                this.turn = TEAM.WHITE;
-                this.whitePieces.map(piece => {
-                    if (piece instanceof Pawn) {
-                        piece.enPassant = false;
-                    }
-                });
-                break;
-            default:
-                this.turn = TEAM.WHITE;
-                break;
+                return TEAM.WHITE;
+
         }
+    }
+
+    isInCheck(king) {
+        let result = false
+        this.pieces[getEnemyTeam(king.team)].forEach((piece) => {
+            if (piece.canMove(king.matrixPosition.x, king.matrixPosition.y, board)) {
+                result = true;
+                return;
+            }
+        })
+        return result;
     }
 
     isPieceAt(x, y) {
         let pieceFound = false
-        this.whitePieces.map(piece => {
+        this.pieces[TEAM.WHITE].map(piece => {
             if(piece.matrixPosition.x === x && piece.matrixPosition.y === y){pieceFound = true}
         })
-        this.blackPieces.map(piece => {
+        this.pieces[TEAM.BLACK].map(piece => {
             if(piece.matrixPosition.x === x && piece.matrixPosition.y === y){pieceFound = true}
         })
         return pieceFound
@@ -78,16 +87,23 @@ class Board {
     }
 
     getPieceAt(x, y) {
-        for (var i = 0; i < this.whitePieces.length; i++) {
-            if (!this.whitePieces[i].taken && this.whitePieces[i].isMatrixPositionAt(x, y)) {
-                return this.whitePieces[i];
+        for (var i = 0; i < this.pieces[TEAM.WHITE].length; i++) {
+            if (!this.pieces[TEAM.WHITE][i].taken && this.pieces[TEAM.WHITE][i].isMatrixPositionAt(x, y)) {
+                return this.pieces[TEAM.WHITE][i];
             }
         }
-        for (var i = 0; i < this.blackPieces.length; i++) {
-            if (!this.blackPieces[i].taken && this.blackPieces[i].isMatrixPositionAt(x, y)) {
-                return this.blackPieces[i];
+        for (var i = 0; i < this.pieces[TEAM.BLACK].length; i++) {
+            if (!this.pieces[TEAM.BLACK][i].taken && this.pieces[TEAM.BLACK][i].isMatrixPositionAt(x, y)) {
+                return this.pieces[TEAM.BLACK][i];
             }
         }
         return this.nullPiece;
+    }
+
+    promotion(pawn, clazz) {
+        if (pawn instanceof Pawn) {
+            this.pieces[pawn.team].push(new clazz(pawn.matrixPosition.x, pawn.matrixPosition.y, pawn.team));
+            pawn.die()   
+        }
     }
 }

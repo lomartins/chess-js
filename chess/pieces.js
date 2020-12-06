@@ -11,6 +11,7 @@ class Piece {
         this.taken = false
         this.team = team
         this.movingThisPiece = false
+        this.moved = false
         this.canJump = false
         this.sprite = spriteMapper["white_pawn"] // default
         this.spriteSize = 0.85
@@ -24,9 +25,9 @@ class Piece {
         if (!this.taken) {
             imageMode(CENTER)
             if (this.movingThisPiece) {
-                image(this.sprite, mouseX, mouseY, tileSize, tileSize)
+                image(this.sprite, mouseX, mouseY, tileSize, tileSize);
             } else {
-                image(this.sprite, this.pixelPosition.x, this.pixelPosition.y, tileSize * this.spriteSize, tileSize * this.spriteSize)
+                image(this.sprite, this.pixelPosition.x, this.pixelPosition.y, tileSize * this.spriteSize, tileSize * this.spriteSize);
             }
         }
     }
@@ -34,17 +35,20 @@ class Piece {
     move(x, y, board) {
         if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
             if (board.isPieceAt(x, y)) {
-                let piece = board.getPieceAt(x, y)
+                let piece = board.getPieceAt(x, y);
                 if (piece.team !== this.team) {
-                    piece.die()
+                    piece.die();
+                    deathSound.setVolume(0.4)
+                    deathSound.play()
                 } else {
-                    return
+                    return;
                 }
             }
             this.matrixPosition = createVector(x, y);
             this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
-            moveSound.play()
-            board.pass()
+            moveSound.play();
+            board.pass();
+            this.moved = true;
         }
     }
 
@@ -52,8 +56,6 @@ class Piece {
         this.taken = true
         this.matrixPosition = createVector(-1, -1)
         this.pixelPosition = createVector(-100, -100)
-        deathSound.setVolume(0.4)
-        deathSound.play()
     }
 
     canMove(x, y, board) {
@@ -251,6 +253,7 @@ class Pawn extends Piece {
         super(x, y, team);
         this.firstMovement = true;
         this.enPassant = false;
+        this.countMovements = 0;
         this.spriteSize = 0.70
         switch(team) {
             case TEAM.WHITE:
@@ -263,6 +266,30 @@ class Pawn extends Piece {
                 break;
         }
     }
+
+    move(x, y, board) {
+        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
+            if (board.isPieceAt(x, y)) {
+                let piece = board.getPieceAt(x, y);
+                if (piece.team !== this.team) {
+                    piece.die();
+                    deathSound.setVolume(0.4)
+                    deathSound.play()
+                } else {
+                    return;
+                }
+            }
+            this.matrixPosition = createVector(x, y);
+            this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
+            moveSound.play();
+            board.pass();
+            this.moved = true;
+            if (this.countMovements >= 6) {
+                board.promotion(this, Queen);
+            }
+        }
+    }
+    
     canMove(x, y, board) {
         let pawnDirection;
 
@@ -282,6 +309,7 @@ class Pawn extends Piece {
         if (attacking) {
             if (this.diagonalMovement(x, y) && (y - this.matrixPosition.y) == pawnDirection) {
                 this.firstMovement = false;
+                this.countMovements += 1;
                 return super.canMove(x, y, board);
             }
             return false;
@@ -291,17 +319,22 @@ class Pawn extends Piece {
             let enPassantPiece = board.getPieceAt(x, y-pawnDirection)
             if (enPassantAttacking && enPassantPiece.enPassant) {
                 enPassantPiece.die();
+                deathSound.setVolume(0.4)
+                deathSound.play()
+                this.countMovements += 1;
                 return super.canMove(x, y, board);
             }
         }
 
         if (x === this.matrixPosition.x) {
             if (y - this.matrixPosition.y == pawnDirection) {
+                this.countMovements += 1;
                 return super.canMove(x, y, board);
             }
             if (this.firstMovement && y - this.matrixPosition.y == pawnDirection*2) {
                 this.firstMovement = false;
                 this.enPassant = true;
+                this.countMovements += 2;
                 return super.canMove(x, y, board)
             }
         }
