@@ -62,6 +62,15 @@ class Board {
         }
     }
 
+    canDoCastling(king, rook) {
+        let canDoCastlingKing = !this.isInCheck(king) && king.firstMovement;
+        let canDoCastlingRook = rook.firstMovement;
+        if(canDoCastlingKing && canDoCastlingRook){
+            return true;
+        }
+        return false;
+    }
+
     isInCheck(king) {
         let result = false
         this.pieces[this.getEnemyTeam(king.team)].forEach((piece) => {
