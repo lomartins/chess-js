@@ -8,8 +8,10 @@ let sprite
 let spriteMapper
 let deathSound
 let moveSound
+let checkSound
 
 function loadAllFiles() { 
+    checkSound = loadSound('./src/sounds/check.mp3')
     moveSound = loadSound('./src/sounds/move-sound.wav')
     deathSound = loadSound('./src/sounds/death-sound.mp3')
     spriteMapper = {

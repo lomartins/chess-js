@@ -132,6 +132,7 @@ class Piece {
 class King extends Piece {
     constructor(x, y, team) {
         super(x, y, team);
+        this.isInCheck = false;
         switch(team) {
             case TEAM.WHITE:
                 this.sprite = spriteMapper["white_king"]
@@ -142,6 +143,15 @@ class King extends Piece {
             default:
                 break;
         }
+    }
+
+    show(){
+        if(this.isInCheck){
+            fill("#ff0000")
+            circle(this.pixelPosition.x, this.pixelPosition.y, tileSize*0.9);
+            
+        }
+        super.show();
     }
 
     canMove(x, y, board) {
