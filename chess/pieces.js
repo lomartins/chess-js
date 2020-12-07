@@ -4,17 +4,18 @@ const TEAM = {
 }
 
 class Piece {
-    constructor(x, y, team) {
-        this.matrixPosition = createVector(x, y)
-        this.pixelPosition = createVector(x*tileSize + tileSize/2, y*tileSize + tileSize/2)
-
-        this.taken = false
-        this.team = team
-        this.movingThisPiece = false
-        this.moved = false
-        this.canJump = false
-        this.sprite = spriteMapper["white_pawn"] // default
-        this.spriteSize = 0.85
+    constructor(x, y, team, board) {
+        this.matrixPosition = createVector(x, y);
+        this.pixelPosition = createVector(x*tileSize + tileSize/2, y*tileSize + tileSize/2);
+        
+        this.firstMovement = true;
+        this.taken = false;
+        this.team = team;
+        this.movingThisPiece = false;
+        this.canJump = false;
+        this.sprite = spriteMapper["white_pawn"]; // default
+        this.spriteSize = 0.85;
+        this.board = board
     }
 
     isMatrixPositionAt(x, y) {
@@ -46,9 +47,10 @@ class Piece {
             }
             this.matrixPosition = createVector(x, y);
             this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
+            this.firstMovement = false;
             moveSound.play();
             board.pass();
-            this.moved = true;
+            
         }
     }
 
@@ -130,8 +132,8 @@ class Piece {
 }
 
 class King extends Piece {
-    constructor(x, y, team) {
-        super(x, y, team);
+    constructor(x, y, team, board) {
+        super(x, y, team, board);
         this.isInCheck = false;
         switch(team) {
             case TEAM.WHITE:
@@ -145,7 +147,7 @@ class King extends Piece {
         }
     }
 
-    show(){
+    show() {
         if(this.isInCheck){
             fill("#ff0000")
             circle(this.pixelPosition.x, this.pixelPosition.y, tileSize*0.9);
@@ -154,17 +156,45 @@ class King extends Piece {
         super.show();
     }
 
+    move(x, y, board) {
+        if(this.canMove(x, y, board)){
+            super.move(x, y, board);
+        } else if (Math.abs(x - this.matrixPosition.x) === 2 && this.matrixPosition.y === y && !this.moveThroughPieces(x, y, board)){
+            let rookPosition;
+            let newRookPosition;
+            switch(x){
+                case 2:
+                    rookPosition = createVector(0, y);
+                    newRookPosition = createVector(3, y);
+                    break;
+                case 6:
+                    rookPosition = createVector(7, y);
+                    newRookPosition = createVector(5, y);
+                    break;
+            }
+            let rook = board.getPieceAt(rookPosition.x, rookPosition.y);
+            if(board.canDoCastling(this, rook)){
+                rook.move(newRookPosition.x, newRookPosition.y, board);
+                this.matrixPosition = createVector(x, y);
+                this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
+                this.firstMovement = false;
+                moveSound.play();
+            }
+        }
+    }
+
     canMove(x, y, board) {
         if (Math.abs(x - this. matrixPosition.x) <= 1 && Math.abs(y - this. matrixPosition.y) <= 1) {
             return super.canMove(x, y, board)
         }
         return false
     }
+
 }
 
 class Queen extends Piece {
-    constructor(x, y, team) {
-        super(x, y, team);
+    constructor(x, y, team, board) {
+        super(x, y, team, board);
         switch(team) {
             case TEAM.WHITE:
                 this.sprite = spriteMapper["white_queen"]
@@ -187,8 +217,8 @@ class Queen extends Piece {
 }
 
 class Rook extends Piece {
-    constructor(x, y, team) {
-        super(x, y, team);
+    constructor(x, y, team, board) {
+        super(x, y, team, board);
         switch(team) {
             case TEAM.WHITE:
                 this.sprite = spriteMapper["white_rook"]
@@ -210,8 +240,8 @@ class Rook extends Piece {
 }
 
 class Bishop extends Piece {
-    constructor(x, y, team) {
-        super(x, y, team);
+    constructor(x, y, team, board) {
+        super(x, y, team, board);
         switch(team) {
             case TEAM.WHITE:
                 this.sprite = spriteMapper["white_bishop"]
@@ -234,8 +264,8 @@ class Bishop extends Piece {
 }
 
 class Knight extends Piece {
-    constructor(x, y, team) {
-        super(x, y, team);
+    constructor(x, y, team, board) {
+        super(x, y, team, board);
         this.canJump = true
         switch(team) {
             case TEAM.WHITE:
@@ -259,9 +289,9 @@ class Knight extends Piece {
 }
 
 class Pawn extends Piece {
-    constructor(x, y, team) {
-        super(x, y, team);
-        this.firstMovement = true;
+    constructor(x, y, team, board) {
+        super(x, y, team, board);
+        
         this.enPassant = false;
         this.countMovements = 0;
         this.spriteSize = 0.70
@@ -293,7 +323,6 @@ class Pawn extends Piece {
             this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
             moveSound.play();
             board.pass();
-            this.moved = true;
             if (this.countMovements >= 6) {
                 board.promotion(this, Queen);
             }
@@ -318,7 +347,6 @@ class Pawn extends Piece {
         let enPassantAttacking = board.isEnemyPieceAt(x, y-pawnDirection, this);
         if (attacking) {
             if (this.diagonalMovement(x, y) && (y - this.matrixPosition.y) == pawnDirection) {
-                this.firstMovement = false;
                 this.countMovements += 1;
                 return super.canMove(x, y, board);
             }
@@ -342,7 +370,6 @@ class Pawn extends Piece {
                 return super.canMove(x, y, board);
             }
             if (this.firstMovement && y - this.matrixPosition.y == pawnDirection*2) {
-                this.firstMovement = false;
                 this.enPassant = true;
                 this.countMovements += 2;
                 return super.canMove(x, y, board)
