@@ -1,5 +1,5 @@
 let screenSize = window.innerHeight*0.8
-let tileSize = (screenSize - 50) / 8
+let tileSize = (screenSize ) / 8
 
 let board
 let moving = false
