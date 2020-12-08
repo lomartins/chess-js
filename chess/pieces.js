@@ -37,7 +37,7 @@ class Piece {
         if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
             if (board.isPieceAt(x, y)) {
                 let piece = board.getPieceAt(x, y);
-                if (piece.team !== this.team) {
+                if (this.isEnemy(piece)) {
                     piece.die();
                     deathSound.setVolume(0.4)
                     deathSound.play()
@@ -60,10 +60,21 @@ class Piece {
         this.pixelPosition = createVector(-100, -100)
     }
 
+    isInsideMatrix(x, y) {
+        return (x < 8 && x >= 0 && y < 8 && y >= 0)
+    }
+
     canMove(x, y, board) {
-        if ((x < 8 && x >= 0 && y < 8 && y >= 0) && (this.directionMovement(x, y) || this.canJump)) {
+        if (this.isInsideMatrix(x, y) && (this.directionMovement(x, y) || this.canJump)) {
             if (!this.moveThroughPieces(x, y, board)) {
-                return true
+                if (board.isPieceAt(x, y)) {
+                    let piece = board.getPieceAt(x, y);
+                    if (this.isEnemy(piece)) {
+                        return true
+                    }
+                } else {
+                    return true;
+                }
             }
         }
         return false
@@ -127,7 +138,10 @@ class Piece {
     }
 
     isEnemy(piece) {
-        return piece.team !== this.team;
+        if(!piece.team == null){
+            return piece.team !== this.team;
+        }
+        return false;
     }
 }
 
@@ -188,6 +202,27 @@ class King extends Piece {
             return super.canMove(x, y, board)
         }
         return false
+    }
+
+    generateMoves(board){
+        let moves = []
+        let kingPosition = this.matrixPosition
+        let fakeKing = new King(kingPosition.x, kingPosition.y, this.team)
+        fakeKing.firstMovement = this.firstMovement;
+        this.matrixPosition = createVector(9, 9);
+        for (var i = -1; i < 2; i++) {
+            for (var j = -1; j < 2; j++) {
+                var x = kingPosition.x + i;
+                var y = kingPosition.y + j;
+                if(fakeKing.canMove(x, y, board) && !(board.isInCheck(new King(kingPosition.x, kingPosition.y, this.team))) && !(i==j && j==0)){
+                    moves.push(createVector(x, y))
+
+                }
+            }
+        }
+        this.matrixPosition = kingPosition;
+        return moves;
+
     }
 
 }
