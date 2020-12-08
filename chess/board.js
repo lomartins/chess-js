@@ -47,8 +47,9 @@ class Board {
                 piece.enPassant = false;
             }
         });
-        this.isInCheck(this.pieces[TEAM.WHITE][0]);
-        this.isInCheck(this.pieces[TEAM.BLACK][0]);
+        if(this.isInCheck(this.pieces[TEAM.WHITE][0]) || this.isInCheck(this.pieces[TEAM.BLACK][0])){
+            checkSound.play();
+        }
     }
 
     getEnemyTeam(team) {
@@ -67,7 +68,6 @@ class Board {
         this.pieces[this.getEnemyTeam(king.team)].forEach((piece) => {
             if (piece.canMove(king.matrixPosition.x, king.matrixPosition.y, board)) {
                 result = true;
-                checkSound.play();
                 return;
             }
         })
