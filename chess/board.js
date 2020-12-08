@@ -99,6 +99,15 @@ class Board {
         return this.getPieceAt(x, y).team !== piece.team && this.getPieceAt(x, y).team !== null
     }
 
+    clonePiece(piece) {
+        let clone = Object.assign(Object.create(Object.getPrototypeOf(piece)), piece)
+        clone.firstMovement = piece.firstMovement;
+        clone.matrixPosition = piece.matrixPosition;
+        clone.team = piece.team;
+        clone.canJump = piece.canJump;
+        return clone;
+    }
+
     getPieceAt(x, y) {
         for (var i = 0; i < this.pieces[TEAM.WHITE].length; i++) {
             if (!this.pieces[TEAM.WHITE][i].taken && this.pieces[TEAM.WHITE][i].isMatrixPositionAt(x, y)) {

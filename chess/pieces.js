@@ -205,10 +205,10 @@ class King extends Piece {
     }
 
     generateMoves(board){
-        let moves = []
-        let kingPosition = this.matrixPosition
-        let fakeKing = new King(kingPosition.x, kingPosition.y, this.team)
-        fakeKing.firstMovement = this.firstMovement;
+        let moves = [];
+        let kingPosition = this.matrixPosition;
+        let fakeKing = board.clonePiece(this)
+
         this.matrixPosition = createVector(9, 9);
         for (var i = -1; i < 2; i++) {
             for (var j = -1; j < 2; j++) {
@@ -248,6 +248,27 @@ class Queen extends Piece {
         } else {
             return false;
         }
+    }
+
+    generateMoves(board){
+        let moves = [];
+        let queenPosition = this.matrixPosition;
+        let fakeQueen = board.clonePiece(this)
+        
+        this.matrixPosition = createVector(9, 9);
+        for (var i = -8; i < 8; i++) {
+            for (var j = -8; j < 8; j++) {
+                var x = queenPosition.x + i;
+                var y = queenPosition.y + j;
+                if(fakeQueen.canMove(x, y, board) && !(board.isInCheck(new Queen(queenPosition.x, queenPosition.y, this.team))) && !(i==j && j==0)){
+                    moves.push(createVector(x, y))
+
+                }
+            }
+        }
+        this.matrixPosition = queenPosition;
+        return moves;
+
     }
 }
 
