@@ -250,25 +250,45 @@ class Queen extends Piece {
         }
     }
 
+    show(can, j , i) {
+        let tileSize = (screenSize ) / 8
+        if(can){
+            fill(255, 0, 0, 80);
+            rect(i*tileSize, j*tileSize, tileSize, tileSize);
+        } else {
+            fill(0, 255, 0, 80);
+            rect(i*tileSize, j*tileSize, tileSize, tileSize);
+        };
+        super.show();
+    }
+
     generateMoves(board){
         let moves = [];
         let queenPosition = this.matrixPosition;
-        let fakeQueen = board.clonePiece(this)
+        let fakeQueen = board.clonePiece(this);
         
         this.matrixPosition = createVector(9, 9);
-        for (var i = -8; i < 8; i++) {
-            for (var j = -8; j < 8; j++) {
+        for (var i = -7; i < 7; i++) {
+            for (var j = -7; j < 7; j++) {
                 var x = queenPosition.x + i;
                 var y = queenPosition.y + j;
-                if(fakeQueen.canMove(x, y, board) && !(board.isInCheck(new Queen(queenPosition.x, queenPosition.y, this.team))) && !(i==j && j==0)){
-                    moves.push(createVector(x, y))
+                //console.log(x, y);
+                //console.log(fakeQueen.canMove(x, y, board));
+                if(this.isInsideMatrix(x, y))   {
+                    if (fakeQueen.canMove(x, y, board) && !(i==j && j==0)){
+                        this.show(false, x , y)
+                    }else{
+                        this.show(true, x , y)
+                    }
+                    if(fakeQueen.canMove(x, y, board) && !(board.isInCheck(new Queen(queenPosition.x, queenPosition.y, this.team))) && !(i==j && j==0)){
+                        moves.push(createVector(x, y))
 
+                    }
                 }
             }
         }
         this.matrixPosition = queenPosition;
         return moves;
-
     }
 }
 
