@@ -119,4 +119,13 @@ class Board {
             pawn.die()   
         }
     }
+
+    clonePiece(piece) {
+        let clone = Object.assign(Object.create(Object.getPrototypeOf(piece)), piece)
+        clone.firstMovement = piece.firstMovement;
+        clone.matrixPosition = piece.matrixPosition;
+        clone.team = piece.team;
+        clone.canJump = piece.canJump;
+        return clone;
+    }
 }
