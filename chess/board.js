@@ -10,34 +10,42 @@ class Board {
     }
 
     setupPieces() {
-        this.pieces[TEAM.BLACK].push(new King(4, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Queen(3, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Rook(0, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Rook(7, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Knight(6, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Knight(1, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Bishop(2, 0, TEAM.BLACK));
-        this.pieces[TEAM.BLACK].push(new Bishop(5, 0, TEAM.BLACK));
+        this.pieces[TEAM.BLACK].push(new King(4, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Queen(3, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Rook(0, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Rook(7, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Knight(6, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Knight(1, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Bishop(2, 0, TEAM.BLACK, this));
+        this.pieces[TEAM.BLACK].push(new Bishop(5, 0, TEAM.BLACK, this));
         for (var i = 0; i < 8; i++) {
-            this.pieces[TEAM.BLACK].push(new Pawn(i, 1, TEAM.BLACK));
+            this.pieces[TEAM.BLACK].push(new Pawn(i, 1, TEAM.BLACK, this));
         }
 
-        this.pieces[TEAM.WHITE].push(new King(4, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Queen(3, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Rook(0, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Rook(7, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Knight(6, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Knight(1, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Bishop(2, 7, TEAM.WHITE));
-        this.pieces[TEAM.WHITE].push(new Bishop(5, 7, TEAM.WHITE));
+        this.pieces[TEAM.WHITE].push(new King(4, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Queen(3, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Rook(0, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Rook(7, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Knight(6, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Knight(1, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Bishop(2, 7, TEAM.WHITE, this));
+        this.pieces[TEAM.WHITE].push(new Bishop(5, 7, TEAM.WHITE, this));
         for (var i = 0; i < 8; i++) {
-            this.pieces[TEAM.WHITE].push(new Pawn(i, 6, TEAM.WHITE));
+            this.pieces[TEAM.WHITE].push(new Pawn(i, 6, TEAM.WHITE, this));
         }
     }
 
+    clone() {
+        let boardClone = new Board();
+        boardClone.pieces[TEAM.WHITE] = this.pieces[TEAM.WHITE].map(piece => piece.clone());
+        boardClone.pieces[TEAM.BLACK] = this.pieces[TEAM.BLACK].map(piece => piece.clone());
+        boardClone.turn = this.turn;
+        return boardClone;
+    }
+
     show() {
-        this.pieces[TEAM.WHITE].map(piece => piece.show());
-        this.pieces[TEAM.BLACK].map(piece => piece.show());
+        this.pieces[TEAM.WHITE].forEach(piece => piece.show());
+        this.pieces[TEAM.BLACK].forEach(piece => piece.show());
     }
 
     pass() {
@@ -111,6 +119,10 @@ class Board {
             }
         }
         return this.nullPiece;
+    }
+
+    getKing(team) {
+        return this.pieces[team][0];
     }
 
     promotion(pawn, clazz) {
