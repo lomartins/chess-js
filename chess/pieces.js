@@ -39,8 +39,8 @@ class Piece {
                 let piece = board.getPieceAt(x, y);
                 if (this.isEnemy(piece)) {
                     piece.die();
-                    deathSound.setVolume(0.4)
-                    deathSound.play()
+                    deathSound.setVolume(0.4);
+                    deathSound.play();
                 } else {
                     return;
                 }
@@ -55,9 +55,9 @@ class Piece {
     }
 
     die() {
-        this.taken = true
-        this.matrixPosition = createVector(-1, -1)
-        this.pixelPosition = createVector(-100, -100)
+        this.taken = true;
+        this.matrixPosition = createVector(-1, -1);
+        this.pixelPosition = createVector(-100, -100);
     }
 
     isInsideMatrix(x, y) {
@@ -68,11 +68,26 @@ class Piece {
         if (this.isInsideMatrix(x, y)) {
             if (!this.moveThroughPieces(x, y, board)) {
                 if (board.isPieceAt(x, y) == this.isEnemy(board.getPieceAt(x, y))) {
-                    return true;
+                    let attackedPiece = board.getPieceAt(x, y);
+                    let attackedPiecePos = createVector(attackedPiece.matrixPosition.x, attackedPiece.matrixPosition.y);
+                    attackedPiece.matrixPosition = createVector(10, 10);
+
+                    let piecePosition = this.matrixPosition;
+                    this.matrixPosition = createVector(x, y);
+                    
+                    let result = !board.isInCheck(board.getKing(this.team));
+
+                    this.matrixPosition = piecePosition;
+                    attackedPiece.matrixPosition = attackedPiecePos;
+                    return result;
                 }
             }
         }
         return false
+    }
+
+    kingInCheck(board) {
+        return board.getKing(this.team);
     }
 
     moveThroughPieces(x, y, board) {
@@ -191,7 +206,7 @@ class King extends Piece {
     move(x, y, board) {
         if(this.canMove(x, y, board)){
             super.move(x, y, board);
-        } else if (Math.abs(x - this.matrixPosition.x) === 2 && this.matrixPosition.y === y && !this.moveThroughPieces(x, y, board)){
+        } else if (this.firstMovement && Math.abs(x - this.matrixPosition.x) === 2 && this.matrixPosition.y === y && !this.moveThroughPieces(x, y, board)){
             let rookPosition;
             let newRookPosition;
             switch(x){
@@ -216,27 +231,28 @@ class King extends Piece {
     }
 
     canMove(x, y, board) {
-        if (Math.abs(x - this. matrixPosition.x) <= 1 && Math.abs(y - this. matrixPosition.y) <= 1) {
-            let kingPosition = this.matrixPosition;
-            let fakeKing = new King(x, y, this.team)
-            this.matrixPosition = createVector(9, 9);
-
-            let attackedPiece = board.getPieceAt(x, y);
-            let attackedPiecePos = attackedPiece.matrixPosition;
-            attackedPiece.matrixPosition = createVector(10, 10);
-
-            if (!board.isInCheck(fakeKing)) {
-                this.matrixPosition = kingPosition;
+        if (Math.abs(x - this. matrixPosition.x) <= 1 && Math.abs(y - this. matrixPosition.y) <= 1 && this.isInsideMatrix(x, y)) {
+            if (!this.isKingsFacingEachOther(x, y, board)) {
                 return super.canMove(x, y, board);
             }
-
-            this.matrixPosition = kingPosition;
-            attackedPiece.matrixPosition = attackedPiecePos;
         }
         return false
     }
 
-    generateMoves(board){
+    isKingsFacingEachOther(x, y, board) {
+        for (var i = -1; i < 2; i++) {
+            for (var j = -1; j < 2; j++) {
+                let checkX = x + i;
+                let checkY = y + j;
+                if (board.isEnemyPieceAt(checkX, checkY, this) && board.getPieceAt(checkX, checkY) instanceof King) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    generateMoves(board) {
         let moves = [];
         let kingPosition = this.matrixPosition;
         let fakeKing = this.clone()
@@ -400,6 +416,7 @@ class Pawn extends Piece {
             }
             this.matrixPosition = createVector(x, y);
             this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
+            this.firstMovement = false;
             moveSound.play();
             board.pass();
             if (this.countMovements >= 6) {
@@ -451,7 +468,7 @@ class Pawn extends Piece {
             if (this.firstMovement && y - this.matrixPosition.y == pawnDirection*2) {
                 this.enPassant = true;
                 this.countMovements += 2;
-                return super.canMove(x, y, board)
+                return super.canMove(x, y, board);
             }
         }
         return false;
