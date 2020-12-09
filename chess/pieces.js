@@ -269,7 +269,6 @@ class King extends Piece {
         }
         this.matrixPosition = kingPosition;
         return moves;
-
     }
 
 }

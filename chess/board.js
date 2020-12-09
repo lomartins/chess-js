@@ -35,12 +35,26 @@ class Board {
         }
     }
 
-    clone() {
-        let boardClone = new Board();
-        boardClone.pieces[TEAM.WHITE] = this.pieces[TEAM.WHITE].map(piece => piece.clone());
-        boardClone.pieces[TEAM.BLACK] = this.pieces[TEAM.BLACK].map(piece => piece.clone());
-        boardClone.turn = this.turn;
-        return boardClone;
+    getCheckEscapeMoves(team){
+        let escapeMoves = [];
+        let pieces = [];
+        let escapeMovesAmount = 0;
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
+                var x = i;
+                var y = j;
+                if(this.isPieceAt(x, y) && this.getPieceAt(x, y).team == this.getAllyTeam(team)){
+                    pieces.push(this.getPieceAt(x, y))
+                }
+            }
+        }
+        for(var p = 0; p < pieces.length; p++)   {
+            for(var m = 0; m < pieces[p].generateMoves(this).length; m++) {
+                escapeMoves.push("piece: " + p + " : " + m )
+            }
+        }
+        escapeMovesAmount = escapeMoves.length;
+        return escapeMovesAmount;
     }
 
     show() {
@@ -66,6 +80,17 @@ class Board {
                 return TEAM.BLACK;
 
             case TEAM.BLACK:
+                return TEAM.WHITE;
+
+        }
+    }
+
+    getAllyTeam(team) {
+        switch(team) {
+            case TEAM.BLACK:
+                return TEAM.BLACK;
+
+            case TEAM.WHITE:
                 return TEAM.WHITE;
 
         }
