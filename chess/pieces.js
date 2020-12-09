@@ -220,11 +220,18 @@ class King extends Piece {
             let kingPosition = this.matrixPosition;
             let fakeKing = new King(x, y, this.team)
             this.matrixPosition = createVector(9, 9);
+
+            let attackedPiece = board.getPieceAt(x, y);
+            let attackedPiecePos = attackedPiece.matrixPosition;
+            attackedPiece.matrixPosition = createVector(10, 10);
+
             if (!board.isInCheck(fakeKing)) {
                 this.matrixPosition = kingPosition;
                 return super.canMove(x, y, board);
             }
+
             this.matrixPosition = kingPosition;
+            attackedPiece.matrixPosition = attackedPiecePos;
         }
         return false
     }
