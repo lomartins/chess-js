@@ -65,14 +65,9 @@ class Piece {
     }
 
     canMove(x, y, board) {
-        if (this.isInsideMatrix(x, y) && (this.directionMovement(x, y) || this.canJump)) {
+        if (this.isInsideMatrix(x, y)) {
             if (!this.moveThroughPieces(x, y, board)) {
-                if (board.isPieceAt(x, y)) {
-                    let piece = board.getPieceAt(x, y);
-                    if (this.isEnemy(piece)) {
-                        return true
-                    }
-                } else {
+                if (board.isPieceAt(x, y) == this.isEnemy(board.getPieceAt(x, y))) {
                     return true;
                 }
             }
@@ -130,19 +125,42 @@ class Piece {
         }
     }
 
-    directionMovement(x, y) {
-        if (this.diagonalMovement(x, y) || this.straightMovement(x, y)) {
-            return true
-        }
-        return false
-    }
-
     isEnemy(piece) {
-        if(!piece.team == null){
-            return piece.team !== this.team;
+        if(piece.team != null){
+            return piece.team != this.team;
         }
         return false;
     }
+
+    generateMoves(board){
+        let moves = [];
+        let fakePiece = this.clone();
+        this.matrixPosition = createVector(9, 9);
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
+                var x = i;
+                var y = j;
+                if(x!==fakePiece.matrixPosition.x || y!==fakePiece.matrixPosition.y) {
+                    // TODO: verificar check do rei
+                    if(fakePiece.canMove(x, y, board)){
+                        moves.push(createVector(x, y));
+                    }
+                }
+            }
+        }
+        this.matrixPosition = fakePiece.matrixPosition;
+        return moves;
+    }
+
+    clone() {
+        let clone = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+        clone.firstMovement = this.firstMovement;
+        clone.matrixPosition = this.matrixPosition;
+        clone.team = this.team;
+        clone.canJump = this.canJump;
+        return clone;
+    }
+
 }
 
 class King extends Piece {
@@ -199,16 +217,22 @@ class King extends Piece {
 
     canMove(x, y, board) {
         if (Math.abs(x - this. matrixPosition.x) <= 1 && Math.abs(y - this. matrixPosition.y) <= 1) {
-            return super.canMove(x, y, board)
+            let kingPosition = this.matrixPosition;
+            let fakeKing = new King(x, y, this.team)
+            this.matrixPosition = createVector(9, 9);
+            if (!board.isInCheck(fakeKing)) {
+                this.matrixPosition = kingPosition;
+                return super.canMove(x, y, board);
+            }
+            this.matrixPosition = kingPosition;
         }
         return false
     }
 
     generateMoves(board){
-        let moves = []
-        let kingPosition = this.matrixPosition
-        let fakeKing = new King(kingPosition.x, kingPosition.y, this.team)
-        fakeKing.firstMovement = this.firstMovement;
+        let moves = [];
+        let kingPosition = this.matrixPosition;
+        let fakeKing = this.clone()
         this.matrixPosition = createVector(9, 9);
         for (var i = -1; i < 2; i++) {
             for (var j = -1; j < 2; j++) {
@@ -249,6 +273,19 @@ class Queen extends Piece {
             return false;
         }
     }
+
+
+
+    showPath(can, x , y) {
+        let tileSize = (screenSize ) / 8
+        if(can){
+            fill(255, 0, 0, 80);
+        } else {
+            fill(0, 255, 0, 80);
+        }
+        rect(x*tileSize, y*tileSize, tileSize, tileSize);
+    }
+
 }
 
 class Rook extends Piece {
@@ -279,11 +316,11 @@ class Bishop extends Piece {
         super(x, y, team, board);
         switch(team) {
             case TEAM.WHITE:
-                this.sprite = spriteMapper["white_bishop"]
-                break
+                this.sprite = spriteMapper["white_bishop"];
+                break;
             case TEAM.BLACK:
-                this.sprite = spriteMapper["black_bishop"]
-                break
+                this.sprite = spriteMapper["black_bishop"];
+                break;
             default:
                 break;
         }
@@ -301,14 +338,14 @@ class Bishop extends Piece {
 class Knight extends Piece {
     constructor(x, y, team, board) {
         super(x, y, team, board);
-        this.canJump = true
+        this.canJump = true;
         switch(team) {
             case TEAM.WHITE:
-                this.sprite = spriteMapper["white_knight"]
-                break
+                this.sprite = spriteMapper["white_knight"];
+                break;
             case TEAM.BLACK:
-                this.sprite = spriteMapper["black_knight"]
-                break
+                this.sprite = spriteMapper["black_knight"];
+                break;
             default:
                 break;
         }
@@ -411,5 +448,12 @@ class Pawn extends Piece {
             }
         }
         return false;
+    }
+
+    clone() {
+        let clone = super.clone();
+        clone.enPassant = this.enPassant;
+        clone.countMovements = this.countMovements;
+        return clone;
     }
 }
