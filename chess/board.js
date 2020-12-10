@@ -113,7 +113,7 @@ class Board {
     isInCheck(king) {
         let result = false;
         this.pieces[this.getEnemyTeam(king.team)].forEach((piece) => {
-            if (piece.canMove(king.matrixPosition.x, king.matrixPosition.y, board)) {
+            if (!piece.taken && piece.canMove(king.matrixPosition.x, king.matrixPosition.y, board)) {
                 result = true;
                 return;
             }

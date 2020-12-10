@@ -77,8 +77,7 @@ class Piece {
 
     isNotSuicideMove(x, y, board) {
         let attackedPiece = board.getPieceAt(x, y);
-        let attackedPiecePos = createVector(attackedPiece.matrixPosition.x, attackedPiece.matrixPosition.y);
-        attackedPiece.matrixPosition = createVector(10, 10);
+        attackedPiece.taken = true;
 
         let piecePosition = this.matrixPosition;
         this.matrixPosition = createVector(x, y);
@@ -86,7 +85,7 @@ class Piece {
         let result = !board.isInCheck(board.getKing(this.team));
 
         this.matrixPosition = piecePosition;
-        attackedPiece.matrixPosition = attackedPiecePos;
+        attackedPiece.taken = false;
         return result;
     }
 
