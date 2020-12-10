@@ -3,8 +3,6 @@ const TEAM = {
     BLACK: 'black',
 }
 
-
-
 class Piece {
     constructor(x, y, team, board) {
         this.matrixPosition = createVector(x, y);
@@ -35,9 +33,8 @@ class Piece {
         }
     }
 
-
     move(x, y, board) {
-        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
+        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y) && this.isNotSuicideMove(x, y, board)) {
             if (board.isPieceAt(x, y)) {
                 let piece = board.getPieceAt(x, y);
                 if (this.isEnemy(piece)) {
@@ -71,22 +68,26 @@ class Piece {
         if (this.isInsideMatrix(x, y)) {
             if (!this.moveThroughPieces(x, y, board)) {
                 if (board.isPieceAt(x, y) == this.isEnemy(board.getPieceAt(x, y))) {
-                    let attackedPiece = board.getPieceAt(x, y);
-                    let attackedPiecePos = createVector(attackedPiece.matrixPosition.x, attackedPiece.matrixPosition.y);
-                    attackedPiece.matrixPosition = createVector(10, 10);
-
-                    let piecePosition = this.matrixPosition;
-                    this.matrixPosition = createVector(x, y);
-                    
-                    let result = !board.isInCheck(board.getKing(this.team));
-
-                    this.matrixPosition = piecePosition;
-                    attackedPiece.matrixPosition = attackedPiecePos;
-                    return result;
+                    return true;
                 }
             }
         }
-        return false
+        return false;
+    }
+
+    isNotSuicideMove(x, y, board) {
+        let attackedPiece = board.getPieceAt(x, y);
+        let attackedPiecePos = createVector(attackedPiece.matrixPosition.x, attackedPiece.matrixPosition.y);
+        attackedPiece.matrixPosition = createVector(10, 10);
+
+        let piecePosition = this.matrixPosition;
+        this.matrixPosition = createVector(x, y);
+        
+        let result = !board.isInCheck(board.getKing(this.team));
+
+        this.matrixPosition = piecePosition;
+        attackedPiece.matrixPosition = attackedPiecePos;
+        return result;
     }
 
     kingInCheck(board) {
@@ -230,25 +231,18 @@ class King extends Piece {
     }
 
     canMove(x, y, board) {
-        if (Math.abs(x - this. matrixPosition.x) <= 1 && Math.abs(y - this. matrixPosition.y) <= 1 && this.isInsideMatrix(x, y)) {
-            if (!this.isKingsFacingEachOther(x, y, board)) {
+        let oneTileMove = this.matrixPosition.dist(createVector(x, y)) < 2;
+        if (oneTileMove) {
+            if (this.isKingSafeDistance(x, y, board)) {
                 return super.canMove(x, y, board);
             }
         }
         return false
     }
 
-    isKingsFacingEachOther(x, y, board) {
-        for (var i = -1; i < 2; i++) {
-            for (var j = -1; j < 2; j++) {
-                let checkX = x + i;
-                let checkY = y + j;
-                if (board.isEnemyPieceAt(checkX, checkY, this) && board.getPieceAt(checkX, checkY) instanceof King) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    isKingSafeDistance(x, y, board) {
+        let enemyKingMatrixPosition = board.getKing(board.getEnemyTeam(this.team)).matrixPosition;
+        return enemyKingMatrixPosition.dist(createVector(x, y)) >= 2;
     }
 
     generateMoves(board) {
@@ -473,7 +467,7 @@ class Pawn extends Piece {
             case TEAM.BLACK:
                 return 1;
             default:
-                return null;
+                return 0;
         }
     }
 
