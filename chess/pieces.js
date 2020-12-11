@@ -82,7 +82,7 @@ class Piece {
         let piecePosition = this.matrixPosition;
         this.matrixPosition = createVector(x, y);
         
-        let result = !board.isInCheck(board.getKing(this.team));
+        let result = !this.kingInCheck(board);
 
         this.matrixPosition = piecePosition;
         attackedPiece.taken = false;
@@ -90,7 +90,8 @@ class Piece {
     }
 
     kingInCheck(board) {
-        return board.getKing(this.team);
+        let king = board.getKing(this.team);
+        return board.isInCheck(king);
     }
 
     moveThroughPieces(x, y, board) {
@@ -157,7 +158,7 @@ class Piece {
                 var x = i;
                 var y = j;
                 if(!this.isMatrixPositionAt(x, y)) {
-                    if(this.canMove(x, y, board)){
+                    if(this.canMove(x, y, board) && this.isNotSuicideMove(x, y, board)){
                         moves.push(createVector(x, y));
                     }
                 }
@@ -394,7 +395,7 @@ class Pawn extends Piece {
     }
 
     move(x, y, board) {
-        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
+        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y) && this.isNotSuicideMove(x, y, board)) {
             if (board.isPieceAt(x, y)) {
                 let piece = board.getPieceAt(x, y);
                 if (piece.team !== this.team) {

@@ -1,3 +1,12 @@
+const GameStatus = {
+    PLAYING: "playing",
+    WHITE_WIN: "white_win",
+    BLACK_WIN: "black_win",
+    STALEMATE: "stalemate",
+    DRAW: "draw",
+}
+
+
 class Board {
     constructor() {
         this.pieces = {
@@ -7,6 +16,7 @@ class Board {
         this.setupPieces();
         this.turn = TEAM.WHITE;
         this.nullPiece = new Piece(null, null, null);
+        this.gameStatus = GameStatus.PLAYING;
     }
 
     setupPieces() {
@@ -51,6 +61,31 @@ class Board {
     show() {
         this.pieces[TEAM.WHITE].forEach(piece => piece.show());
         this.pieces[TEAM.BLACK].forEach(piece => piece.show());
+        this.showGameOver();
+    }
+
+    showGameOver() {
+        let message = "";
+        switch(this.gameStatus) {
+            case GameStatus.PLAYING: return;
+            case GameStatus.WHITE_WIN:
+                message = "Fim de jogo! As brancas vencem.";
+                break;
+            case GameStatus.BLACK_WIN:
+                message = "Fim de jogo! As Pretas vencem.";
+                break;
+            case GameStatus.STALEMATE:
+                message =  "Empate! Rei afogado.";
+                break;
+            case GameStatus.DRAW:
+                message = "Empate!";
+                break;
+            default:
+                message = "Não";
+                break;
+        }
+        setTimeout(() => {window.alert(message)}, 1)
+        restartGame();
     }
 
     pass() {
@@ -62,7 +97,7 @@ class Board {
         });
 
         if (this.countPossibleMovements(this.turn) == 0) {
-            if (board.getKing(this).isInCheck) {
+            if (board.getKing(this.turn).isInCheck) {
                 this.checkMate(this.turn);
             } else {
                 this.stalemate();
@@ -76,15 +111,14 @@ class Board {
     }
 
     checkMate(loserTeam) {
-        let winnerTeam;
         switch (loserTeam) {
             case TEAM.BLACK:
-                winnerTeam = "branco";
+                this.gameStatus = GameStatus.WHITE_WIN;
                 break;
             case TEAM.WHITE:
-                winnerTeam = "preto";
+                this.gameStatus = GameStatus.BLACK_WIN;
+                break;
         }
-        window.alert(`O time ${winnerTeam} ganhou!`)
     }
 
     stalemate() {

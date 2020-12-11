@@ -66,6 +66,10 @@ function showGrid(){
     }
 }
 
+function restartGame() {
+    board = new Board();
+}
+
 function mousePressed() {
     var x = floor(mouseX/tileSize)
     var y = floor(mouseY/tileSize)
