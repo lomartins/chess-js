@@ -121,9 +121,6 @@ class Board {
         }
     }
 
-    stalemate() {
-        // TODO
-    }
 
     getEnemyTeam(team) {
         switch(team) {
