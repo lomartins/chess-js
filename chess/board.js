@@ -193,3 +193,4 @@ class Board {
             pawn.die()
         }
     }
+}
