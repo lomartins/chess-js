@@ -1,5 +1,5 @@
-let screenSize = 600
-const tileSize = screenSize / 8
+let screenSize = window.innerHeight*0.8
+let tileSize = (screenSize ) / 8
 
 let board
 let moving = false
@@ -8,8 +8,15 @@ let sprite
 let spriteMapper
 let deathSound
 let moveSound
+let checkSound
+
+function resizeBoard(resizeValue) {
+    screenSize *= resizeValue
+    tileSize = (screenSize - 50) / 8
+}
 
 function loadAllFiles() { 
+    checkSound = loadSound('./src/sounds/check.mp3')
     moveSound = loadSound('./src/sounds/move-sound.wav')
     deathSound = loadSound('./src/sounds/death-sound.mp3')
     spriteMapper = {
@@ -57,6 +64,10 @@ function showGrid(){
             rect(i*tileSize, j*tileSize, tileSize, tileSize)
         }
     }
+}
+
+function restartGame() {
+    board = new Board();
 }
 
 function mousePressed() {
