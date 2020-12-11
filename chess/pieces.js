@@ -34,13 +34,13 @@ class Piece {
     }
 
     move(x, y, board) {
-        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
+        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y) && this.isNotSuicideMove(x, y, board)) {
             if (board.isPieceAt(x, y)) {
                 let piece = board.getPieceAt(x, y);
-                if (piece.team !== this.team) {
+                if (this.isEnemy(piece)) {
                     piece.die();
-                    deathSound.setVolume(0.4)
-                    deathSound.play()
+                    deathSound.setVolume(0.4);
+                    deathSound.play();
                 } else {
                     return;
                 }
@@ -55,18 +55,43 @@ class Piece {
     }
 
     die() {
-        this.taken = true
-        this.matrixPosition = createVector(-1, -1)
-        this.pixelPosition = createVector(-100, -100)
+        this.taken = true;
+        this.matrixPosition = createVector(-1, -1);
+        this.pixelPosition = createVector(-100, -100);
+    }
+
+    isInsideMatrix(x, y) {
+        return (x < 8 && x >= 0 && y < 8 && y >= 0)
     }
 
     canMove(x, y, board) {
-        if ((x < 8 && x >= 0 && y < 8 && y >= 0) && (this.directionMovement(x, y) || this.canJump)) {
+        if (this.isInsideMatrix(x, y)) {
             if (!this.moveThroughPieces(x, y, board)) {
-                return true
+                if (board.isPieceAt(x, y) == this.isEnemy(board.getPieceAt(x, y))) {
+                    return true;
+                }
             }
         }
-        return false
+        return false;
+    }
+
+    isNotSuicideMove(x, y, board) {
+        let attackedPiece = board.getPieceAt(x, y);
+        attackedPiece.taken = true;
+
+        let piecePosition = this.matrixPosition;
+        this.matrixPosition = createVector(x, y);
+        
+        let result = !this.kingInCheck(board);
+
+        this.matrixPosition = piecePosition;
+        attackedPiece.taken = false;
+        return result;
+    }
+
+    kingInCheck(board) {
+        let king = board.getKing(this.team);
+        return board.isInCheck(king);
     }
 
     moveThroughPieces(x, y, board) {
@@ -119,16 +144,38 @@ class Piece {
         }
     }
 
-    directionMovement(x, y) {
-        if (this.diagonalMovement(x, y) || this.straightMovement(x, y)) {
-            return true
+    isEnemy(piece) {
+        if(piece.team != null){
+            return piece.team != this.team;
         }
-        return false
+        return false;
     }
 
-    isEnemy(piece) {
-        return piece.team !== this.team;
+    generateMoves(board){
+        let moves = [];
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
+                var x = i;
+                var y = j;
+                if(!this.isMatrixPositionAt(x, y)) {
+                    if(this.canMove(x, y, board) && this.isNotSuicideMove(x, y, board)){
+                        moves.push(createVector(x, y));
+                    }
+                }
+            }
+        }
+        return moves;
     }
+
+    clone() {
+        let clone = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+        clone.firstMovement = this.firstMovement;
+        clone.matrixPosition = this.matrixPosition;
+        clone.team = this.team;
+        clone.canJump = this.canJump;
+        return clone;
+    }
+
 }
 
 class King extends Piece {
@@ -159,7 +206,7 @@ class King extends Piece {
     move(x, y, board) {
         if(this.canMove(x, y, board)){
             super.move(x, y, board);
-        } else if (Math.abs(x - this.matrixPosition.x) === 2 && this.matrixPosition.y === y && !this.moveThroughPieces(x, y, board)){
+        } else if (this.firstMovement && Math.abs(x - this.matrixPosition.x) === 2 && this.matrixPosition.y === y && !this.moveThroughPieces(x, y, board)){
             let rookPosition;
             let newRookPosition;
             switch(x){
@@ -184,10 +231,37 @@ class King extends Piece {
     }
 
     canMove(x, y, board) {
-        if (Math.abs(x - this. matrixPosition.x) <= 1 && Math.abs(y - this. matrixPosition.y) <= 1) {
-            return super.canMove(x, y, board)
+        let oneTileMove = this.matrixPosition.dist(createVector(x, y)) < 2;
+        if (oneTileMove) {
+            if (this.isKingSafeDistance(x, y, board)) {
+                return super.canMove(x, y, board);
+            }
         }
         return false
+    }
+
+    isKingSafeDistance(x, y, board) {
+        let enemyKingMatrixPosition = board.getKing(board.getEnemyTeam(this.team)).matrixPosition;
+        return enemyKingMatrixPosition.dist(createVector(x, y)) >= 2;
+    }
+
+    generateMoves(board) {
+        let moves = [];
+        let kingPosition = this.matrixPosition;
+        let fakeKing = this.clone()
+        this.matrixPosition = createVector(9, 9);
+        for (var i = -1; i < 2; i++) {
+            for (var j = -1; j < 2; j++) {
+                var x = kingPosition.x + i;
+                var y = kingPosition.y + j;
+                if(fakeKing.canMove(x, y, board) && !(board.isInCheck(new King(kingPosition.x, kingPosition.y, this.team))) && !(i==j && j==0)){
+                    moves.push(createVector(x, y))
+
+                }
+            }
+        }
+        this.matrixPosition = kingPosition;
+        return moves;
     }
 
 }
@@ -214,6 +288,19 @@ class Queen extends Piece {
             return false;
         }
     }
+
+
+
+    showPath(can, x , y) {
+        let tileSize = (screenSize ) / 8
+        if(can){
+            fill(255, 0, 0, 80);
+        } else {
+            fill(0, 255, 0, 80);
+        }
+        rect(x*tileSize, y*tileSize, tileSize, tileSize);
+    }
+
 }
 
 class Rook extends Piece {
@@ -244,11 +331,11 @@ class Bishop extends Piece {
         super(x, y, team, board);
         switch(team) {
             case TEAM.WHITE:
-                this.sprite = spriteMapper["white_bishop"]
-                break
+                this.sprite = spriteMapper["white_bishop"];
+                break;
             case TEAM.BLACK:
-                this.sprite = spriteMapper["black_bishop"]
-                break
+                this.sprite = spriteMapper["black_bishop"];
+                break;
             default:
                 break;
         }
@@ -266,14 +353,14 @@ class Bishop extends Piece {
 class Knight extends Piece {
     constructor(x, y, team, board) {
         super(x, y, team, board);
-        this.canJump = true
+        this.canJump = true;
         switch(team) {
             case TEAM.WHITE:
-                this.sprite = spriteMapper["white_knight"]
-                break
+                this.sprite = spriteMapper["white_knight"];
+                break;
             case TEAM.BLACK:
-                this.sprite = spriteMapper["black_knight"]
-                break
+                this.sprite = spriteMapper["black_knight"];
+                break;
             default:
                 break;
         }
@@ -308,7 +395,7 @@ class Pawn extends Piece {
     }
 
     move(x, y, board) {
-        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y)) {
+        if (this.canMove(x, y, board) && !this.isMatrixPositionAt(x, y) && this.isNotSuicideMove(x, y, board)) {
             if (board.isPieceAt(x, y)) {
                 let piece = board.getPieceAt(x, y);
                 if (piece.team !== this.team) {
@@ -319,62 +406,86 @@ class Pawn extends Piece {
                     return;
                 }
             }
+
+            if (this.canEnPassant(x, y, board)) {
+                let pawnDirection = this.pawnDirection();
+                let enPassantPiece = board.getPieceAt(x, y-pawnDirection);
+                enPassantPiece.die()
+            }
+            
+            let tilesWaked = Math.abs(this.matrixPosition.y - y);
+            this.countMovements += tilesWaked;
+
+            if (tilesWaked == 2) {
+                this.enPassant = true;
+            }
+
             this.matrixPosition = createVector(x, y);
             this.pixelPosition = createVector(x * tileSize + tileSize / 2, y *tileSize + tileSize / 2);
+            this.firstMovement = false;
             moveSound.play();
-            board.pass();
             if (this.countMovements >= 6) {
                 board.promotion(this, Queen);
             }
+            board.pass();
         }
     }
     
     canMove(x, y, board) {
-        let pawnDirection;
+        let pawnDirection = this.pawnDirection();
 
-        switch(this.team) {
-            case TEAM.WHITE:
-                pawnDirection = -1;
-                break;
-            case TEAM.BLACK:
-                pawnDirection = 1;
-                break;
-            default:
-                window.alert("Ocorreu um erro grave");
-        }
+
 
         let attacking = board.isEnemyPieceAt(x, y, this);
         let enPassantAttacking = board.isEnemyPieceAt(x, y-pawnDirection, this);
         if (attacking) {
             if (this.diagonalMovement(x, y) && (y - this.matrixPosition.y) == pawnDirection) {
-                this.countMovements += 1;
                 return super.canMove(x, y, board);
             }
             return false;
         }
 
-        if (enPassantAttacking) {
-            let enPassantPiece = board.getPieceAt(x, y-pawnDirection)
-            if (enPassantAttacking && enPassantPiece.enPassant) {
-                enPassantPiece.die();
-                deathSound.setVolume(0.4)
-                deathSound.play()
-                this.countMovements += 1;
-                return super.canMove(x, y, board);
-            }
+        if (this.canEnPassant(x, y, board)) {
+            return super.canMove(x, y, board);
         }
 
         if (x === this.matrixPosition.x) {
             if (y - this.matrixPosition.y == pawnDirection) {
-                this.countMovements += 1;
                 return super.canMove(x, y, board);
             }
             if (this.firstMovement && y - this.matrixPosition.y == pawnDirection*2) {
-                this.enPassant = true;
-                this.countMovements += 2;
-                return super.canMove(x, y, board)
+                return super.canMove(x, y, board);
             }
         }
         return false;
+    }
+
+    pawnDirection() {
+        switch(this.team) {
+            case TEAM.WHITE:
+                return -1;
+            case TEAM.BLACK:
+                return 1;
+            default:
+                return 0;
+        }
+    }
+
+    canEnPassant(x, y, board) {
+        let pawnDirection = this.pawnDirection();
+
+        if (!board.isEnemyPieceAt(x, y-pawnDirection, this)) return false;
+
+        let enPassantPiece = board.getPieceAt(x, y-pawnDirection);
+        let movement = (y - this.matrixPosition.y);
+
+        return movement == pawnDirection && enPassantPiece instanceof Pawn && enPassantPiece.enPassant;
+    }
+
+    clone() {
+        let clone = super.clone();
+        clone.enPassant = this.enPassant;
+        clone.countMovements = this.countMovements;
+        return clone;
     }
 }
