@@ -245,25 +245,6 @@ class King extends Piece {
         return enemyKingMatrixPosition.dist(createVector(x, y)) >= 2;
     }
 
-    generateMoves(board) {
-        let moves = [];
-        let kingPosition = this.matrixPosition;
-        let fakeKing = this.clone()
-        this.matrixPosition = createVector(9, 9);
-        for (var i = -1; i < 2; i++) {
-            for (var j = -1; j < 2; j++) {
-                var x = kingPosition.x + i;
-                var y = kingPosition.y + j;
-                if(fakeKing.canMove(x, y, board) && !(board.isInCheck(new King(kingPosition.x, kingPosition.y, this.team))) && !(i==j && j==0)){
-                    moves.push(createVector(x, y))
-
-                }
-            }
-        }
-        this.matrixPosition = kingPosition;
-        return moves;
-    }
-
 }
 
 class Queen extends Piece {
