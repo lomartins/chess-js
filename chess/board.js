@@ -100,7 +100,7 @@ class Board {
             if (board.getKing(this.turn).isInCheck) {
                 this.checkMate(this.turn);
             } else {
-                this.stalemate();
+                this.gameStatus = GameStatus.STALEMATE;
             }
             return;
         }
@@ -120,7 +120,6 @@ class Board {
                 break;
         }
     }
-
 
     getEnemyTeam(team) {
         switch(team) {
