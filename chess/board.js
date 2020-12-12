@@ -90,24 +90,39 @@ class Board {
 
     pass() {
         this.turn = this.getEnemyTeam(this.turn);
+        this.handleEnPassant();
+        this.handleKingCheck();
+        this.handleGameStatus();
+    }
+
+    handleEnPassant() {
         this.pieces[this.turn].forEach(piece => {
             if (piece instanceof Pawn) {
                 piece.enPassant = false;
             }
         });
+    }
 
+    handleGameStatus() {
         if (this.countPossibleMovements(this.turn) == 0) {
             if (board.getKing(this.turn).isInCheck) {
                 this.checkMate(this.turn);
             } else {
-                this.stalemate();
+                this.gameStatus = GameStatus.STALEMATE;
             }
-            return;
         }
+    }
 
-        if(this.isInCheck(this.pieces[TEAM.WHITE][0]) || this.isInCheck(this.pieces[TEAM.BLACK][0])){
-            checkSound.play();
-        }
+    handleKingCheck() {
+        Object.values(TEAM).forEach(team => {
+            let king = this.getKing(team);
+            if(this.isInCheck(king)){
+                checkSound.play();
+                king.isInCheck = true;
+            } else {
+                king.isInCheck = false;
+            }
+        });
     }
 
     checkMate(loserTeam) {
@@ -120,7 +135,6 @@ class Board {
                 break;
         }
     }
-
 
     getEnemyTeam(team) {
         switch(team) {
@@ -135,7 +149,7 @@ class Board {
     canDoCastling(king, rook) {
         let canDoCastlingKing = !this.isInCheck(king) && king.firstMovement;
         let canDoCastlingRook = rook.firstMovement;
-        if(canDoCastlingKing && canDoCastlingRook){
+        if(canDoCastlingKing && canDoCastlingRook && rook instanceof Rook){
             return true;
         }
         return false;
@@ -149,7 +163,6 @@ class Board {
                 return;
             }
         });
-        king.isInCheck = result;
         return result;
     }
 
