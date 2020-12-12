@@ -14,9 +14,16 @@ class Board {
             [TEAM.BLACK]: [],
         };
         this.setupPieces();
+        this.initEvents();
         this.turn = TEAM.WHITE;
         this.nullPiece = new Piece(null, null, null);
         this.gameStatus = GameStatus.PLAYING;
+        
+    }
+
+    initEvents() {
+        this.gamePassEvent = document.createEvent('Event');
+        this.gamePassEvent.initEvent('gamePass', true, true);
     }
 
     setupPieces() {
@@ -93,6 +100,7 @@ class Board {
         this.handleEnPassant();
         this.handleKingCheck();
         this.handleGameStatus();
+        document.dispatchEvent(this.gamePassEvent);
     }
 
     handleEnPassant() {
